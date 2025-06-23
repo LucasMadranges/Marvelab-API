@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <style>
+    .branding {
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 15px;
+    }
+    .logo {
+      font-weight: bold;
+      font-size: 18px;
+      color: #4285f4;
+    }
+    .tab-content {
+      display: none;
+      padding: 10px 0;
+    }
+    .active {
+      display: block;
+    }
+    .item-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #fff;
+      position: relative;
+    }
+    .item-card:hover {
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    }
+    .item-content {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .item-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .resource-image {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 10px;
+      border-radius: 4px;
+    }
+    .checkbox-container {
+      margin-bottom: 15px;
+    }
+    .prompt-container {
+      margin-top: 15px;
+    }
+    #promptInput {
+      width: 100%;
+      min-height: 80px;
+      margin-bottom: 10px;
+      padding: 8px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    .error-message {
+      color: #d32f2f;
+      font-size: 14px;
+      margin-top: 10px;
+      display: none;
+    }
+    .success-message {
+      color: #388e3c;
+      font-size: 14px;
+      margin-top: 10px;
+      display: none;
+    }
+    .generated-text {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 10px;
+      margin-top: 15px;
+      background-color: #f9f9f9;
+      display: none;
+    }
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 15px;
+    }
+    .tab {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      border-bottom: 2px solid #4285f4;
+      color: #4285f4;
+    }
+    .section-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #5f6368;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .checkbox-label input {
+      margin-right: 8px;
+    }
+    .suggested-prompts {
+      margin-top: 15px;
+    }
+    .prompt-suggestion {
+      display: inline-block;
+      margin-right: 5px;
+      margin-bottom: 5px;
+      padding: 5px 10px;
+      background-color: #e8f0fe;
+      border-radius: 12px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .prompt-suggestion:hover {
+      background-color: #d2e3fc;
+    }
+  </style>
+</head>
+<body>
+  <div class="branding">
+    <div class="logo">Marvelab</div>
+    <div>Simplifier le travail des chercheurs</div>
+  </div>
+  
+  <div class="tab-bar">
+    <div class="tab active" data-tab="notes">Notes</div>
+    <div class="tab" data-tab="interpretations">Interprétations</div>
+    <div class="tab" data-tab="resources">Ressources</div>
+    <div class="tab" data-tab="generate">Générer du texte</div>
+    <div class="tab" data-tab="advanced">Avancé</div>
+  </div>
+  
+  <!-- Notes Tab -->
+  <div id="notes" class="tab-content active">
+    <div class="section-title">Notes de recherche</div>
+    <div id="notesList"></div>
+    <div class="loading" id="notesLoading">Chargement des notes...</div>
+    <div class="error-message" id="notesError"></div>
+  </div>
+  
+  <!-- Interpretations Tab -->
+  <div id="interpretations" class="tab-content">
+    <div class="section-title">Interprétations des résultats</div>
+    <div id="interpretationsList"></div>
+    <div class="loading" id="interpretationsLoading">Chargement des interprétations...</div>
+    <div class="error-message" id="interpretationsError"></div>
+  </div>
+  
+  <!-- Resources Tab -->
+  <div id="resources" class="tab-content">
+    <div class="section-title">Ressources visuelles</div>
+    <div id="resourcesList"></div>
+    <div class="loading" id="resourcesLoading">Chargement des ressources...</div>
+    <div class="error-message" id="resourcesError"></div>
+  </div>
+  
+  <!-- Generate Text Tab -->
+  <div id="generate" class="tab-content">
+    <div class="section-title">Générer du texte avec l'IA</div>
+    
+    <div class="checkbox-container">
+      <div>Sélectionnez les éléments à utiliser :</div>
+      
+      <div class="section-title" style="font-size: 14px; margin-top: 10px;">Notes</div>
+      <div id="notesCheckboxes"></div>
+      
+      <div class="section-title" style="font-size: 14px; margin-top: 10px;">Interprétations</div>
+      <div id="interpretationsCheckboxes"></div>
+    </div>
+    
+    <div class="prompt-container">
+      <div>Entrez votre prompt :</div>
+      <textarea id="promptInput" placeholder="Ex: En te basant sur la note 1 et 2 et l'interprétation 1, crée une conclusion."></textarea>
+      
+      <div class="suggested-prompts">
+        <div>Suggestions :</div>
+        <div class="prompt-suggestion" onclick="usePromptSuggestion('Crée une conclusion basée sur les éléments sélectionnés.')">Conclusion</div>
+        <div class="prompt-suggestion" onclick="usePromptSuggestion('Rédige une introduction scientifique basée sur les éléments sélectionnés.')">Introduction</div>
+        <div class="prompt-suggestion" onclick="usePromptSuggestion('Explique la méthodologie utilisée dans cette recherche.')">Méthodologie</div>
+      </div>
+      
+      <button class="action" onclick="generateText()">Générer</button>
+      <div class="loading" id="generateLoading">Génération en cours...</div>
+      <div class="error-message" id="generateError"></div>
+    </div>
+    
+    <div class="generated-text" id="generatedTextContainer">
+      <div class="section-title">Texte généré</div>
+      <div id="generatedText"></div>
+      <div style="margin-top: 10px;">
+        <button class="action" onclick="insertGeneratedText()">Insérer dans le document</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Advanced Tab (Methodologies & Experiments) -->
+  <div id="advanced" class="tab-content">
+    <div class="section-title">Méthodologies</div>
+    <div id="methodologiesList"></div>
+    <div class="loading" id="methodologiesLoading">Chargement des méthodologies...</div>
+    <div class="error-message" id="methodologiesError"></div>
+    
+    <div class="section-title" style="margin-top: 20px;">Expérimentations</div>
+    <div id="experimentsList"></div>
+    <div class="loading" id="experimentsLoading">Chargement des expérimentations...</div>
+    <div class="error-message" id="experimentsError"></div>
+  </div>
+  
+  <script>
+    // Global variables
+    let notes = [];
+    let interpretations = [];
+    let resources = [];
+    let methodologies = [];
+    let experiments = [];
+    let generatedText = '';
+    
+    // Initialize the sidebar
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set up tab navigation
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Remove active class from all tabs and content
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          
+          // Add active class to clicked tab and corresponding content
+          this.classList.add('active');
+          const tabId = this.getAttribute('data-tab');
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+      
+      // Load data
+      loadNotes();
+      loadInterpretations();
+      loadResources();
+      loadMethodologies();
+      loadExperiments();
+    });
+    
+    // Load notes from the server
+    function loadNotes() {
+      document.getElementById('notesLoading').style.display = 'block';
+      document.getElementById('notesError').style.display = 'none';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('notesLoading').style.display = 'none';
+          
+          if (result.error) {
+            document.getElementById('notesError').textContent = result.error;
+            document.getElementById('notesError').style.display = 'block';
+            return;
+          }
+          
+          notes = result;
+          displayNotes(result);
+          updateNotesCheckboxes(result);
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('notesLoading').style.display = 'none';
+          document.getElementById('notesError').textContent = 'Erreur: ' + error;
+          document.getElementById('notesError').style.display = 'block';
+        })
+        .getNotes();
+    }
+    
+    // Display notes in the UI
+    function displayNotes(notes) {
+      const notesList = document.getElementById('notesList');
+      notesList.innerHTML = '';
+      
+      notes.forEach(note => {
+        const noteCard = document.createElement('div');
+        noteCard.className = 'item-card';
+        
+        const noteContent = document.createElement('div');
+        noteContent.className = 'item-content';
+        noteContent.textContent = note.content;
+        
+        const noteActions = document.createElement('div');
+        noteActions.className = 'item-actions';
+        
+        const insertButton = document.createElement('button');
+        insertButton.className = 'action';
+        insertButton.textContent = 'Insérer';
+        insertButton.onclick = function() {
+          insertNote(note.id);
+        };
+        
+        noteActions.appendChild(insertButton);
+        noteCard.appendChild(noteContent);
+        noteCard.appendChild(noteActions);
+        notesList.appendChild(noteCard);
+      });
+    }
+    
+    // Insert a note into the document
+    function insertNote(noteId) {
+      const note = notes.find(n => n.id === noteId);
+      if (!note) return;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showSuccessMessage('Note insérée avec succès');
+          } else {
+            showErrorMessage('Erreur lors de l\'insertion: ' + result.error);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showErrorMessage('Erreur: ' + error);
+        })
+        .insertTextContent(note.content);
+    }
+    
+    // Load interpretations from the server
+    function loadInterpretations() {
+      document.getElementById('interpretationsLoading').style.display = 'block';
+      document.getElementById('interpretationsError').style.display = 'none';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('interpretationsLoading').style.display = 'none';
+          
+          if (result.error) {
+            document.getElementById('interpretationsError').textContent = result.error;
+            document.getElementById('interpretationsError').style.display = 'block';
+            return;
+          }
+          
+          interpretations = result;
+          displayInterpretations(result);
+          updateInterpretationsCheckboxes(result);
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('interpretationsLoading').style.display = 'none';
+          document.getElementById('interpretationsError').textContent = 'Erreur: ' + error;
+          document.getElementById('interpretationsError').style.display = 'block';
+        })
+        .getInterpretations();
+    }
+    
+    // Display interpretations in the UI
+    function displayInterpretations(interpretations) {
+      const interpretationsList = document.getElementById('interpretationsList');
+      interpretationsList.innerHTML = '';
+      
+      interpretations.forEach(interpretation => {
+        const interpretationCard = document.createElement('div');
+        interpretationCard.className = 'item-card';
+        
+        const interpretationContent = document.createElement('div');
+        interpretationContent.className = 'item-content';
+        interpretationContent.textContent = interpretation.content;
+        
+        const interpretationActions = document.createElement('div');
+        interpretationActions.className = 'item-actions';
+        
+        const insertButton = document.createElement('button');
+        insertButton.className = 'action';
+        insertButton.textContent = 'Insérer';
+        insertButton.onclick = function() {
+          insertInterpretation(interpretation.id);
+        };
+        
+        interpretationActions.appendChild(insertButton);
+        interpretationCard.appendChild(interpretationContent);
+        interpretationCard.appendChild(interpretationActions);
+        interpretationsList.appendChild(interpretationCard);
+      });
+    }
+    
+    // Insert an interpretation into the document
+    function insertInterpretation(interpretationId) {
+      const interpretation = interpretations.find(i => i.id === interpretationId);
+      if (!interpretation) return;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showSuccessMessage('Interprétation insérée avec succès');
+          } else {
+            showErrorMessage('Erreur lors de l\'insertion: ' + result.error);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showErrorMessage('Erreur: ' + error);
+        })
+        .insertTextContent(interpretation.content);
+    }
+    
+    // Load resources from the server
+    function loadResources() {
+      document.getElementById('resourcesLoading').style.display = 'block';
+      document.getElementById('resourcesError').style.display = 'none';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('resourcesLoading').style.display = 'none';
+          
+          if (result.error) {
+            document.getElementById('resourcesError').textContent = result.error;
+            document.getElementById('resourcesError').style.display = 'block';
+            return;
+          }
+          
+          resources = result;
+          displayResources(result);
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('resourcesLoading').style.display = 'none';
+          document.getElementById('resourcesError').textContent = 'Erreur: ' + error;
+          document.getElementById('resourcesError').style.display = 'block';
+        })
+        .getResources();
+    }
+    
+    // Display resources in the UI
+    function displayResources(resources) {
+      const resourcesList = document.getElementById('resourcesList');
+      resourcesList.innerHTML = '';
+      
+      resources.forEach(resource => {
+        const resourceCard = document.createElement('div');
+        resourceCard.className = 'item-card';
+        
+        const resourceTitle = document.createElement('div');
+        resourceTitle.className = 'section-title';
+        resourceTitle.style.fontSize = '14px';
+        resourceTitle.textContent = resource.title;
+        
+        const resourceImage = document.createElement('img');
+        resourceImage.className = 'resource-image';
+        resourceImage.src = resource.url;
+        resourceImage.alt = resource.description;
+        
+        const resourceDescription = document.createElement('div');
+        resourceDescription.className = 'item-content';
+        resourceDescription.textContent = resource.description;
+        
+        const resourceActions = document.createElement('div');
+        resourceActions.className = 'item-actions';
+        
+        const insertButton = document.createElement('button');
+        insertButton.className = 'action';
+        insertButton.textContent = 'Insérer';
+        insertButton.onclick = function() {
+          insertResource(resource.id);
+        };
+        
+        resourceActions.appendChild(insertButton);
+        resourceCard.appendChild(resourceTitle);
+        resourceCard.appendChild(resourceImage);
+        resourceCard.appendChild(resourceDescription);
+        resourceCard.appendChild(resourceActions);
+        resourcesList.appendChild(resourceCard);
+      });
+    }
+    
+    // Insert a resource into the document
+    function insertResource(resourceId) {
+      const resource = resources.find(r => r.id === resourceId);
+      if (!resource) return;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showSuccessMessage('Ressource insérée avec succès');
+          } else {
+            showErrorMessage('Erreur lors de l\'insertion: ' + result.error);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showErrorMessage('Erreur: ' + error);
+        })
+        .insertImage(resource.url, resource.description);
+    }
+    
+    // Load methodologies from the server
+    function loadMethodologies() {
+      document.getElementById('methodologiesLoading').style.display = 'block';
+      document.getElementById('methodologiesError').style.display = 'none';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('methodologiesLoading').style.display = 'none';
+          
+          if (result.error) {
+            document.getElementById('methodologiesError').textContent = result.error;
+            document.getElementById('methodologiesError').style.display = 'block';
+            return;
+          }
+          
+          methodologies = result;
+          displayMethodologies(result);
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('methodologiesLoading').style.display = 'none';
+          document.getElementById('methodologiesError').textContent = 'Erreur: ' + error;
+          document.getElementById('methodologiesError').style.display = 'block';
+        })
+        .getMethodologies();
+    }
+    
+    // Display methodologies in the UI
+    function displayMethodologies(methodologies) {
+      const methodologiesList = document.getElementById('methodologiesList');
+      methodologiesList.innerHTML = '';
+      
+      methodologies.forEach(methodology => {
+        const methodologyCard = document.createElement('div');
+        methodologyCard.className = 'item-card';
+        
+        const methodologyTitle = document.createElement('div');
+        methodologyTitle.className = 'section-title';
+        methodologyTitle.style.fontSize = '14px';
+        methodologyTitle.textContent = methodology.title;
+        
+        const methodologyContent = document.createElement('div');
+        methodologyContent.className = 'item-content';
+        methodologyContent.textContent = methodology.description;
+        
+        const methodologyActions = document.createElement('div');
+        methodologyActions.className = 'item-actions';
+        
+        const insertButton = document.createElement('button');
+        insertButton.className = 'action';
+        insertButton.textContent = 'Insérer';
+        insertButton.onclick = function() {
+          insertMethodology(methodology.id);
+        };
+        
+        methodologyActions.appendChild(insertButton);
+        methodologyCard.appendChild(methodologyTitle);
+        methodologyCard.appendChild(methodologyContent);
+        methodologyCard.appendChild(methodologyActions);
+        methodologiesList.appendChild(methodologyCard);
+      });
+    }
+    
+    // Insert a methodology into the document
+    function insertMethodology(methodologyId) {
+      const methodology = methodologies.find(m => m.id === methodologyId);
+      if (!methodology) return;
+      
+      const content = `${methodology.title}\n${methodology.description}`;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showSuccessMessage('Méthodologie insérée avec succès');
+          } else {
+            showErrorMessage('Erreur lors de l\'insertion: ' + result.error);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showErrorMessage('Erreur: ' + error);
+        })
+        .insertTextContent(content);
+    }
+    
+    // Load experiments from the server
+    function loadExperiments() {
+      document.getElementById('experimentsLoading').style.display = 'block';
+      document.getElementById('experimentsError').style.display = 'none';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('experimentsLoading').style.display = 'none';
+          
+          if (result.error) {
+            document.getElementById('experimentsError').textContent = result.error;
+            document.getElementById('experimentsError').style.display = 'block';
+            return;
+          }
+          
+          experiments = result;
+          displayExperiments(result);
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('experimentsLoading').style.display = 'none';
+          document.getElementById('experimentsError').textContent = 'Erreur: ' + error;
+          document.getElementById('experimentsError').style.display = 'block';
+        })
+        .getExperiments();
+    }
+    
+    // Display experiments in the UI
+    function displayExperiments(experiments) {
+      const experimentsList = document.getElementById('experimentsList');
+      experimentsList.innerHTML = '';
+      
+      experiments.forEach(experiment => {
+        const experimentCard = document.createElement('div');
+        experimentCard.className = 'item-card';
+        
+        const experimentTitle = document.createElement('div');
+        experimentTitle.className = 'section-title';
+        experimentTitle.style.fontSize = '14px';
+        experimentTitle.textContent = experiment.title;
+        
+        const experimentContent = document.createElement('div');
+        experimentContent.className = 'item-content';
+        experimentContent.textContent = experiment.description;
+        
+        const experimentActions = document.createElement('div');
+        experimentActions.className = 'item-actions';
+        
+        const insertButton = document.createElement('button');
+        insertButton.className = 'action';
+        insertButton.textContent = 'Insérer';
+        insertButton.onclick = function() {
+          insertExperiment(experiment.id);
+        };
+        
+        experimentActions.appendChild(insertButton);
+        experimentCard.appendChild(experimentTitle);
+        experimentCard.appendChild(experimentContent);
+        experimentCard.appendChild(experimentActions);
+        experimentsList.appendChild(experimentCard);
+      });
+    }
+    
+    // Insert an experiment into the document
+    function insertExperiment(experimentId) {
+      const experiment = experiments.find(e => e.id === experimentId);
+      if (!experiment) return;
+      
+      const content = `${experiment.title}\n${experiment.description}`;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showSuccessMessage('Expérimentation insérée avec succès');
+          } else {
+            showErrorMessage('Erreur lors de l\'insertion: ' + result.error);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showErrorMessage('Erreur: ' + error);
+        })
+        .insertTextContent(content);
+    }
+    
+    // Update notes checkboxes in the generate tab
+    function updateNotesCheckboxes(notes) {
+      const notesCheckboxes = document.getElementById('notesCheckboxes');
+      notesCheckboxes.innerHTML = '';
+      
+      notes.forEach(note => {
+        const label = document.createElement('label');
+        label.className = 'checkbox-label';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = note.id;
+        checkbox.name = 'noteCheckbox';
+        
+        const noteText = document.createTextNode(`Note ${note.id}`);
+        
+        label.appendChild(checkbox);
+        label.appendChild(noteText);
+        notesCheckboxes.appendChild(label);
+      });
+    }
+    
+    // Update interpretations checkboxes in the generate tab
+    function updateInterpretationsCheckboxes(interpretations) {
+      const interpretationsCheckboxes = document.getElementById('interpretationsCheckboxes');
+      interpretationsCheckboxes.innerHTML = '';
+      
+      interpretations.forEach(interpretation => {
+        const label = document.createElement('label');
+        label.className = 'checkbox-label';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = interpretation.id;
+        checkbox.name = 'interpretationCheckbox';
+        
+        const interpretationText = document.createTextNode(`Interprétation ${interpretation.id}`);
+        
+        label.appendChild(checkbox);
+        label.appendChild(interpretationText);
+        interpretationsCheckboxes.appendChild(label);
+      });
+    }
+    
+    // Use a prompt suggestion
+    function usePromptSuggestion(suggestion) {
+      document.getElementById('promptInput').value = suggestion;
+    }
+    
+    // Generate text using the Gemini API
+    function generateText() {
+      const prompt = document.getElementById('promptInput').value.trim();
+      if (!prompt) {
+        showErrorMessage('Veuillez entrer un prompt');
+        return;
+      }
+      
+      // Get selected notes
+      const selectedNotes = [];
+      document.querySelectorAll('input[name="noteCheckbox"]:checked').forEach(checkbox => {
+        selectedNotes.push(parseInt(checkbox.value));
+      });
+      
+      // Get selected interpretations
+      const selectedInterpretations = [];
+      document.querySelectorAll('input[name="interpretationCheckbox"]:checked').forEach(checkbox => {
+        selectedInterpretations.push(parseInt(checkbox.value));
+      });
+      
+      // Prepare data for generation
+      const data = {
+        prompt: prompt,
+        notes: selectedNotes,
+        interpretations: selectedInterpretations
+      };
+      
+      // Show loading indicator
+      document.getElementById('generateLoading').style.display = 'block';
+      document.getElementById('generateError').style.display = 'none';
+      document.getElementById('generatedTextContainer').style.display = 'none';
+      
+      // Call the server-side function
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('generateLoading').style.display = 'none';
+          
+          if (!result.success) {
+            document.getElementById('generateError').textContent = result.error;
+            document.getElementById('generateError').style.display = 'block';
+            return;
+          }
+          
+          // Display the generated text
+          generatedText = result.text;
+          document.getElementById('generatedText').textContent = result.text;
+          document.getElementById('generatedTextContainer').style.display = 'block';
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('generateLoading').style.display = 'none';
+          document.getElementById('generateError').textContent = 'Erreur: ' + error;
+          document.getElementById('generateError').style.display = 'block';
+        })
+        .generateTextFromItems(data);
+    }
+    
+    // Insert the generated text into the document
+    function insertGeneratedText() {
+      if (!generatedText) return;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showSuccessMessage('Texte inséré avec succès');
+          } else {
+            showErrorMessage('Erreur lors de l\'insertion: ' + result.error);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showErrorMessage('Erreur: ' + error);
+        })
+        .insertTextContent(generatedText);
+    }
+    
+    // Show a success message
+    function showSuccessMessage(message) {
+      // Implementation would go here
+      // For simplicity, we're using an alert for now
+      alert(message);
+    }
+    
+    // Show an error message
+    function showErrorMessage(message) {
+      // Implementation would go here
+      // For simplicity, we're using an alert for now
+      alert('Erreur: ' + message);
+    }
+  </script>
+</body>
+</html>

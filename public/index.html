@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <title>Marvelab API Documentation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #2980b9;
+      margin-top: 30px;
+    }
+    h3 {
+      color: #3498db;
+    }
+    code {
+      background-color: #f8f9fa;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+    pre {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    .endpoint {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-left: 4px solid #3498db;
+      border-radius: 0 5px 5px 0;
+    }
+    .method {
+      font-weight: bold;
+      color: #2980b9;
+    }
+    .url {
+      font-family: monospace;
+      margin-left: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .footer {
+      margin-top: 50px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      text-align: center;
+      color: #7f8c8d;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Marvelab API Documentation</h1>
+    
+    <p>Welcome to the Marvelab API documentation. This API provides access to research data including notes, interpretations, resources, methodologies, and experiments.</p>
+    
+    <h2>Base URL</h2>
+    <p>All API endpoints are relative to: <code>http://localhost:3000/api</code></p>
+    
+    <h2>Endpoints</h2>
+    
+    <h3>Notes</h3>
+    <div class="endpoint">
+      <p><span class="method">GET</span><span class="url">/notes</span></p>
+      <p>Returns all notes.</p>
+    </div>
+    
+    <div class="endpoint">
+      <p><span class="method">GET</span><span class="url">/notes/:id</span></p>
+      <p>Returns a specific note by ID.</p>
+    </div>
+    
+    <h3>Interpretations</h3>
+    <div class="endpoint">
+      <p><span class="method">GET</span><span class="url">/interpretations</span></p>
+      <p>Returns all interpretations.</p>
+    </div>
+    
+    <div class="endpoint">
+      <p><span class="method">GET</span><span class="url">/interpretations/:id</span></p>
+      <p>Returns a specific interpretation by ID.</p>
+    </div>
+    
+    <h3>Resources</h3>
+    <div class="endpoint">
+      <p><span class="method">GET</span><span class="url">/resources</span></p>
+      <p>Returns all resources.</p>
+    </div>
+    
+    <div class="endpoint">
+      <p><span class="method">GET</span><span class="url">/resources/:id</span></p>
+      <p>Returns a specific resource by ID.</p>
+    </div>
+    
+    <h3>Methodologies</h3>
+    <div class="endpoint">
+      <p><span class="method">GET</span><span class="url">/methodologies</span></p>
+      <p>Returns all methodologies.</p>
+    </div>
+    
+    <div class="endpoint">
+      <p><span class="method">GET</span><span class="url">/methodologies/:id</span></p>
+      <p>Returns a specific methodology by ID.</p>
+    </div>
+    
+    <h3>Experiments</h3>
+    <div class="endpoint">
+      <p><span class="method">GET</span><span class="url">/experiments</span></p>
+      <p>Returns all experiments.</p>
+    </div>
+    
+    <div class="endpoint">
+      <p><span class="method">GET</span><span class="url">/experiments/:id</span></p>
+      <p>Returns a specific experiment by ID.</p>
+    </div>
+    
+    <h3>All Data</h3>
+    <div class="endpoint">
+      <p><span class="method">GET</span><span class="url">/all</span></p>
+      <p>Returns all data from all categories.</p>
+    </div>
+    
+    <h2>Response Format</h2>
+    <p>All responses are in JSON format. Here's an example response for <code>/api/notes</code>:</p>
+    <pre>[
+  {
+    "id": 1,
+    "content": "Plusieurs études ont montré qu'une exposition régulière aux espaces verts est associée à une réduction du stress et à une amélioration des fonctions cognitives chez les adultes."
+  },
+  {
+    "id": 2,
+    "content": "Dans une expérience contrôlée, les participants ayant marché 20 minutes dans un parc ont présenté une baisse de 15 % du taux de cortisol, comparé à ceux ayant marché en milieu urbain."
+  }
+]</pre>
+
+    <h2>Google Docs Add-on</h2>
+    <p>This API is designed to work with the Marvelab Google Docs Add-on. The add-on allows researchers to:</p>
+    <ul>
+      <li>Insert notes, interpretations, and resources directly into Google Docs</li>
+      <li>Generate text using AI based on research data</li>
+      <li>Access methodologies and experiment details</li>
+    </ul>
+    
+    <div class="footer">
+      <p>Marvelab API - Simplifying research workflows</p>
+    </div>
+  </div>
+</body>
+</html>
