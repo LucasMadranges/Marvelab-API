@@ -182,6 +182,8 @@ app.post('/api/gemini', async (req, res) => {
     );
 
     const generatedText = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+    console.log(generatedText);
+    console.log(generatedText.response.data.candidates?.[0]?.content?.parts?.[0]?.text);
     res.json({ text: generatedText });
 
   } catch (error) {
