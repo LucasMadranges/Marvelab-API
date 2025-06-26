@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+import axios from "axios";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -153,6 +154,38 @@ app.get('/api/experiments/:id', (req, res) => {
 // Get all data (for convenience)
 app.get('/api/all', (req, res) => {
   res.json(marvelabData);
+});
+
+app.post('/api/gemini', async (req, res) => {
+  const { prompt } = req.body;
+
+  if (!prompt) {
+    return res.status(400).json({ error: 'Le champ "prompt" est requis.' });
+  }
+
+  try {
+    const response = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API}`,
+        {
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.5,
+            maxOutputTokens: 512,
+          },
+        }
+    );
+
+    const generatedText = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+    res.json({ text: generatedText });
+
+  } catch (error) {
+    console.error('Erreur Gemini:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Erreur lors de la génération Gemini.' });
+  }
 });
 
 // Start the server
